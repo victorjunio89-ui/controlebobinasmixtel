@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Enlaces Ópticos</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-gray-100 font-sans min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-lg">
+        <h1 class="text-2xl font-bold text-gray-800 mb-6 text-center border-b pb-4">
+            Cadastro de Enlace Óptico
+        </h1>
+
+        <div id="step-estado" class="space-y-4">
+            <label class="block text-sm font-semibold text-gray-700">Selecione o Estado (UF):</label>
+            <select id="select-estado" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                <option value="">-- Selecione um Estado --</option>
+                <option value="GO">Goiás (GO)</option>
+                <option value="SP">São Paulo (SP)</option>
+                <option value="RJ">Rio de Janeiro (RJ)</option>
+            </select>
+            <button onclick="proximoPasso('cidade')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition-colors">
+                Próximo
+            </button>
+        </div>
+
+        <div id="step-cidade" class="space-y-4 hidden">
+            <label class="block text-sm font-semibold text-gray-700">Selecione a Cidade:</label>
+            <select id="select-cidade" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </select>
+            <div class="flex gap-3">
+                <button onclick="passoAnterior('estado')" class="w-1/2 bg-gray-300 hover:bg-gray-400 text-gray-700 font-medium py-3 rounded-lg transition-colors">
+                    Voltar
+                </button>
+                <button onclick="proximoPasso('enlace')" class="w-1/2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition-colors">
+                    Próximo
+                </button>
+            </div>
+        </div>
+
+        <div id="step-enlace" class="space-y-4 hidden">
+            <h3 class="text-md font-medium text-gray-600 mb-2">Dados das Extremidades</h3>
+            
+            <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase">Ponto A (Nome do POP):</label>
+                <input type="text" id="pop-a" placeholder="Ex: POP Central" class="w-full p-3 border border-gray-300 rounded-lg mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase">Ponto B (Outra Extremidade):</label>
+                <input type="text" id="pop-b" placeholder="Ex: POP Bairro Novo" class="w-full p-3 border border-gray-300 rounded-lg mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase">Distância do Enlace (km):</label>
+                <input type="number" id="distancia" placeholder="Ex: 14.5" step="0.01" class="w-full p-3 border border-gray-300 rounded-lg mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            </div>
+
+            <div class="flex gap-3 pt-2">
+                <button onclick="passoAnterior('cidade')" class="w-1/2 bg-gray-300 hover:bg-gray-400 text-gray-700 font-medium py-3 rounded-lg transition-colors">
+                    Voltar
+                </button>
+                <button onclick="salvarEnlace()" class="w-1/2 bg-green-600 hover:bg-green-700 text-white font-medium py-3 rounded-lg transition-colors">
+                    Salvar Enlace
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Dados simulados de cidades por estado
+        const cidadesPorEstado = {
+            GO: ["Mineiros", "Goiânia", "Rio Verde"],
+            SP: ["São Paulo", "Campinas", "Santos"],
+            RJ: ["Rio de Janeiro", "Niterói", "Angra dos Reis"]
+        };
+
+        // Elementos das telas
+        const stepEstado = document.getElementById('step-estado');
+        const stepCidade = document.getElementById('step-cidade');
+        const stepEnlace = document.getElementById('step-enlace');
+
+        // Elementos de formulário
+        const selectEstado = document.getElementById('select-estado');
+        const selectCidade = document.getElementById('select-cidade');
+
+        // Função para avançar as telas (passos)
+        function proximoPasso(proximo) {
+            if (proximo === 'cidade') {
+                const estadoSelecionado = selectEstado.value;
+                if (!estadoSelecionado) {
+                    alert("Por favor, selecione um estado!");
+                    return;
+                }
+                
+                // Carrega as cidades dinamicamente
+                selectCidade.innerHTML = '<option value="">-- Selecione uma Cidade --</option>';
+                cidadesPorEstado[estadoSelecionado].forEach(cidade => {
+                    const option = document.createElement('option');
+                    option.value = cidade;
+                    option.textContent = cidade;
+                    selectCidade.appendChild(option);
+                });
+
+                stepEstado.classList.add('hidden');
+                stepCidade.classList.remove('hidden');
+            } 
+            
+            else if (proximo === 'enlace') {
+                if (!selectCidade.value) {
+                    alert("Por favor, selecione uma cidade!");
+                    return;
+                }
+                stepCidade.classList.add('hidden');
+                stepEnlace.classList.remove('hidden');
+            }
+        }
+
+        // Função para voltar as telas
+        function passoAnterior(anterior) {
+            if (anterior === 'estado') {
+                stepCidade.classList.add('hidden');
+                stepEstado.classList.remove('hidden');
+            } else if (anterior === 'cidade') {
+                stepEnlace.classList.add('hidden');
+                stepCidade.classList.remove('hidden');
+            }
+        }
+
+        // Função para finalizar e coletar os dados
+        function salvarEnlace() {
+            const estado = selectEstado.value;
+            const cidade = selectCidade.value;
+            const popA = document.getElementById('pop-a').value;
+            const popB = document.getElementById('pop-b').value;
+            const distancia = document.getElementById('distancia').value;
+
+            if (!popA || !popB || !distancia) {
+                alert("Por favor, preencha todos os campos do enlace!");
+                return;
+            }
+
+            // Objeto com todos os dados capturados
+            const dadosEnlace = { estado, cidade, popA, popB, distancia: parseFloat(distancia) };
+            
+            console.log("Dados Cadastrados com Sucesso:", dadosEnlace);
+            alert(`Enlace Cadastrado!\n\nDe: ${dadosEnlace.popA}\nPara: ${dadosEnlace.popB}\nDistância: ${dadosEnlace.distancia} km\nEm: ${dadosEnlace.cidade} - ${dadosEnlace.estado}`);
+            
+            // Reseta o formulário para o primeiro passo
+            document.getElementById('pop-a').value = '';
+            document.getElementById('pop-b').value = '';
+            document.getElementById('distancia').value = '';
+            selectEstado.value = '';
+            
+            stepEnlace.classList.add('hidden');
+            stepEstado.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
